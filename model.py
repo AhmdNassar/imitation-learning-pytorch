@@ -46,6 +46,7 @@ class Net(nn.Module):
                 
     def forward(self,x):
         img , speed , command = x
+        
         """ --- image layers ---"""
         
         img = F.relu(self.drop1(self.bn1(self.conv1(img))))
@@ -67,27 +68,29 @@ class Net(nn.Module):
         speed = F.relu(self.speed_drop2(self.speed_fc2(speed)))
         
         """ Joint sensory """
+        
         j = torch.cat((img,speed),1)
         self.nSize = img.data.size(1)   # get input size for joint FC layer
         j = self.relu(self.joint_drop(self.joint_fc(j)))
         
-        """branching"""
+        """ branching """
+        
         if int(command) == 0 or int(command) == 2 : # follow lane
             out = F.relu(self.branches[0][1](self.branches[0][0](j)))
             out = F.relu(self.branches[0][3](self.branches[0][2](out)))
             out = self.branches[0][4](out)
         
-        if int(command) == 3 : # left
+        elif int(command) == 3 : # left
             out = F.relu(self.branches[1][1](self.branches[1][0](j)))
             out = F.relu(self.branches[1][3](self.branches[1][2](out)))
             out = self.branches[1][4](out)
         
-        if int(command) == 4 : # right
+        elif int(command) == 4 : # right
             out = F.relu(self.branches[2][1](self.branches[2][0](j)))
             out = F.relu(self.branches[2][3](self.branches[2][2](out)))
             out = self.branches[2][4](out)
         
-        if int(command) == 5 : # straight
+        elif int(command) == 5 : # straight
             out = F.relu(self.branches[3][1](self.branches[3][0](j)))
             out = F.relu(self.branches[3][3](self.branches[3][2](out)))
             out = self.branches[3][4](out)
