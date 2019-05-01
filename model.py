@@ -9,6 +9,8 @@ class Net(nn.Module):
     def __init__(self):
         super(Net,self).__init__()
         self.nSize=1 # init with 1 to avoid divided by azro error before feeding model with data
+        self.branches = {} # we use it to brach model depend on input command 
+        
         """---- Image Layers ----"""
         
         self.buildImageLayers()
@@ -24,8 +26,24 @@ class Net(nn.Module):
         self.joint_fc = nn.Linear(self.nSize,512)
         self.joint_drop = nn.Dropout(0.5)
         
-        # TODO: start branching according to input command
+        """start pranching"""
         
+        """######################################################"""
+        #  command = 0 or 2 -- > follow lane -- > brach idx = 0 #
+        #  command = 3 -- > go left          -- > brach idx = 1 #
+        #  command = 4-- > Right             -- > brach idx = 2 #
+        #  command = 5-- > straight          -- > brach idx = 3 #
+        """######################################################"""
+        
+        for i in range(4):
+            self.branches[int(i)] = [nn.Linear(512,256)]
+            self.branches[int(i)].append(nn.Dropout(0.5))
+            self.branches[int(i)].append(nn.Linear(256,256))
+            self.branches[int(i)].append(nn.Dropout(0.5)) 
+            self.branches[int(i)].append(nn.Linear(256,3)) # model out is [steer,gas,brake] prediction
+                
+                
+                
     def forward(self,x):
         img , speed , command = x
         """ --- image layers ---"""
@@ -53,8 +71,27 @@ class Net(nn.Module):
         self.nSize = img.data.size(1)   # get input size for joint FC layer
         j = self.relu(self.joint_drop(self.joint_fc(j)))
         
+        """branching"""
+        if int(command) == 0 or int(command) == 2 : # follow lane
+            out = F.relu(self.branches[0][1](self.branches[0][0](j)))
+            out = F.relu(self.branches[0][3](self.branches[0][2](out)))
+            out = self.branches[0][4](out)
         
-        return j
+        if int(command) == 3 : # left
+            out = F.relu(self.branches[1][1](self.branches[1][0](j)))
+            out = F.relu(self.branches[1][3](self.branches[1][2](out)))
+            out = self.branches[1][4](out)
+        
+        if int(command) == 4 : # right
+            out = F.relu(self.branches[2][1](self.branches[2][0](j)))
+            out = F.relu(self.branches[2][3](self.branches[2][2](out)))
+            out = self.branches[2][4](out)
+        
+        if int(command) == 5 : # straight
+            out = F.relu(self.branches[3][1](self.branches[3][0](j)))
+            out = F.relu(self.branches[3][3](self.branches[3][2](out)))
+            out = self.branches[3][4](out)
+        return out
     
     def buildImageLayers(self):
         self.conv1 = nn.Conv2d(3,32,5,stride=2,padding=1)
@@ -88,5 +125,6 @@ class Net(nn.Module):
     
 test = Net()
 print(test)
+
 
     
