@@ -37,14 +37,14 @@ class StopEarly:
                 return True
             if loss >= self.best_loss :
                 self.counter += 1
-                print(f"/nno improvement for {self.counter} / {self.patience}./n------------")
+                print(f"/nno improvement for {self.counter} / {self.patience}.\n------------")
             else:
                 self.counter = 0
                 self.best_loss = loss
                 # save model 
                 print(f'We get new best loss: {self.best_loss} , saving model...')
                 torch.save(model.state_dict(),self.model_dir+"model.pt")
-                print('model saved./n------------')
+                print('model saved.\n------------')
             return False
 
 
@@ -181,4 +181,4 @@ def load_saved_model(model,path="./saved_models",saved_model_name = "model.pt"):
         model.load_state_dict(torch.load(path+saved_model_name))
     
     else:
-        print("No saved checkpoint./n")
+        print("No saved checkpoint.\n")
