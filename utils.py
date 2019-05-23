@@ -168,7 +168,7 @@ def cost(params,type_loss ="L1"):
     return torch.sum(loss_function) / (params['branches'][0].shape[0])\
                 
 
-def load_saved_model(model,path="./saved_models",saved_model_name = "model.pt"):
+def load_saved_model(model,path="./saved_models/",saved_model_name = "model.pt"):
     """
         Load model if exist
         Args:
@@ -177,8 +177,10 @@ def load_saved_model(model,path="./saved_models",saved_model_name = "model.pt"):
         
         No return 
     """
+    path = path + saved_model_name
     if os.path.exists(path):
-        model.load_state_dict(torch.load(path+saved_model_name))
+        model.load_state_dict(torch.load(path))
+        print("checkpoint loaded.\n")
     
     else:
         print("No saved checkpoint.\n")
