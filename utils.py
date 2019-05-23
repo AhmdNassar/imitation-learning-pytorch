@@ -37,7 +37,7 @@ class StopEarly:
                 return True
             if loss >= self.best_loss :
                 self.counter += 1
-                print(f"no improvement for {self.counter} / {self.patience}./n------------")
+                print(f"/nno improvement for {self.counter} / {self.patience}./n------------")
             else:
                 self.counter = 0
                 self.best_loss = loss
@@ -148,3 +148,37 @@ def l1_loss(params):
                                  * params['branch_weights'][i])
     
     return loss_branches_vec
+
+def cost(params,type_loss ="l1"):
+    if(type_loss=="l1"):
+        loss_branches_vec = l1_loss(params)
+    elif (type_loss=="l2"):
+        loss_branches_vec = l2_loss_loss(params)
+    else:
+        raise Exception("Wrong loss function, we suport l1 and l2 only right now")
+    for i in range(4):
+        loss_branches_vec[i] = loss_branches_vec[i][0] * params['variable_weights']['Steer'] \
+                               + loss_branches_vec[i][1] * params['variable_weights']['Gas'] \
+                               + loss_branches_vec[i][2] * params['variable_weights']['Brake']
+
+    loss_function = loss_branches_vec[0] + loss_branches_vec[1] + loss_branches_vec[2] + \
+                    loss_branches_vec[3]
+
+
+    return torch.sum(loss_function) / (params['branches'][0].shape[0])\
+                
+
+def load_saved_model(model,path="./saved_models",saved_model_name = "model.pt"):
+    """
+        Load model if exist
+        Args:
+            model : model Class
+            path  : path of saved model
+        
+        No return 
+    """
+    if os.path.exists(path):
+        model.load_state_dict(torch.load(path+saved_model_name))
+    
+    else:
+        print("No saved checkpoint./n")
