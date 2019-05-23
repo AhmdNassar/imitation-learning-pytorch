@@ -149,13 +149,13 @@ def l1_loss(params):
     
     return loss_branches_vec
 
-def cost(params,type_loss ="l1"):
-    if(type_loss=="l1"):
+def cost(params,type_loss ="L1"):
+    if(type_loss=="L1"):
         loss_branches_vec = l1_loss(params)
-    elif (type_loss=="l2"):
+    elif (type_loss=="L2"):
         loss_branches_vec = l2_loss_loss(params)
     else:
-        raise Exception("Wrong loss function, we suport l1 and l2 only right now")
+        raise Exception("Wrong loss function, we suport L1 and L2 only right now")
     for i in range(4):
         loss_branches_vec[i] = loss_branches_vec[i][0] * params['variable_weights']['Steer'] \
                                + loss_branches_vec[i][1] * params['variable_weights']['Gas'] \
