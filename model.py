@@ -95,7 +95,7 @@ class CarlaNet(nn.Module):
         j = torch.cat([img,speed],1)
         j = self.joint_fc(j)
         
-        output = torch.cat([out(j) for out in self.branches],dim=1)
+        output = torch.stack([out(j) for out in self.branches],dim=0)
         return output
 
     
